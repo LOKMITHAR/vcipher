@@ -1,0 +1,255 @@
+<template>
+  
+  <main class="vigenere__wrapper" id="vigenere">
+   <div class="typewriter">
+      <h1 class="vigenere__title">
+          Vigenere Encryption
+      </h1>
+   </div>
+   <br/>
+   <div class="vigenere__modes">
+      <div class="vigenere__radio">
+         <input type="radio" id="encrypt" value="true" v-model="is_encrypting"/>
+         <label for="encrypt">Encrypt</label>
+      </div>
+
+      <div class="vigenere__radio">
+         <input type="radio" id="decrypt" value="false" v-model="is_encrypting"/>
+         <label for="decrypt">Decrypt</label>
+      </div>
+   </div>
+   
+   <textarea class="vigenere__input" rows="5" v-model="message"></textarea>
+   
+   <div class="vigenere__key">
+      Secret key: <input type="text" v-model="key"/>
+   </div>
+   
+   <div class="vigenere__message">
+      <h3 class="vigenere__message-banner">
+         Your 
+         <span v-if="current_mode">Encrypted</span>
+         <span v-else>Decrypted</span> Message
+      </h3>
+      
+      <p>
+         {{encrypted_message}}
+      </p>
+   </div>
+   <div id="button">
+    <a on:click="myFunction">Copy text</a>
+   </div>
+</main>
+
+</template>
+
+<script>
+export default {
+  el: '#vigenere',
+  data: {
+    alphabet_array: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", ",", "?", "!", "\'", "_", "-", "&", "@", "#", "$", "%", "*", "(", ")", " "],
+    is_encrypting: 'true',
+    message: 'This is a secret message to encrypt! In order to decode the below text, you will need the below key. Otherwise you get a jumble of crap.',
+    key: 'thats what she said' },
+
+  methods: {
+    convert_to_array: function (string) {
+      return string.toUpperCase().split('');
+    },
+   
+    myFunction:function () {
+      var copyText = this.encrypted_message;
+    
+          
+     
+      navigator.clipboard.writeText(copyText);
+      
+   
+      alert("Copied the text");
+    },
+ 
+    get_adjusted_key_array: function (item) {
+      const item_index = this.alphabet_array.indexOf(item),
+      before_index_array = this.alphabet_array.slice(0, item_index),
+      after_index_array = this.alphabet_array.slice(item_index);
+
+      return after_index_array.concat(before_index_array);
+    } },
+
+  computed: {
+    current_mode: function () {
+      return this.is_encrypting === ("true" || true) ? true : false;
+    },
+    message_array: function () {return this.convert_to_array(this.message);},
+    key_array: function () {return this.convert_to_array(this.key);},
+    key_adjusted_arrays: function () {
+      let adjusted_arrays = [];
+
+      this.key_array.forEach(item => adjusted_arrays.push(this.get_adjusted_key_array(item)));
+
+      return adjusted_arrays;
+    },
+    encrypted_array: function () {
+      const is_encrypting = this.current_mode,
+      message_array = this.message_array,
+      key_arrays = this.key_adjusted_arrays,
+      alphabet_array = this.alphabet_array;
+
+      let encrypted_array = message_array.map(function (item, index) {
+        const current_index = index % key_arrays.length,
+        current_key_array = key_arrays[current_index];
+
+        if (is_encrypting) {
+          const alphabet_index = alphabet_array.indexOf(item),
+          encrypted_character = current_key_array[alphabet_index];
+
+          return encrypted_character;
+        } else {
+          const encrypted_index = current_key_array.indexOf(item),
+          decrypted_character = alphabet_array[encrypted_index];
+
+          return decrypted_character;
+        }
+      });
+
+      return encrypted_array;
+    },
+    encrypted_message: function () {
+      const is_encrypting = this.current_mode,
+      encrypted_array = this.encrypted_array;
+
+      let final_message = encrypted_array.reduce(function (acc, char, index) {
+        acc += char;
+        return acc; 
+      }, '');
+
+      if (!is_encrypting) {
+        final_message = final_message.toLowerCase();
+      }
+
+      return final_message;
+    } } 
+}
+  </script>
+
+  <style>
+    * {
+  box-sizing: border-box;
+  font-family: 'Roboto Mono', monospace;
+  font-family: 'Space Mono', monospace;
+  background-color: black;
+  color: #00ff22cc;
+}
+
+input,
+textarea {
+  padding: 0.5rem;
+  border: 1px solid #00ff22cc;
+  border-radius: 3px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.274);
+  font-family: 'Roboto Mono', monospace;
+  font-family: 'Space Mono', monospace;
+}
+
+.vigenere__wrapper {
+  padding: 1rem;
+  min-height: 100vh;
+  background-color: #000000;
+}
+
+.vigenere__title {
+  text-align: center;
+}
+
+.vigenere__modes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.vigenere__radio {
+  display: flex;
+  padding: 0.5rem;
+  accent-color: #00ff22cc;
+}
+.vigenere__radio input {
+  margin-right: 0.33rem;
+}
+
+.vigenere__input {
+  display: block;
+  width: 100%;
+  margin: 0.5rem auto 1rem;
+  max-width: 30rem;
+}
+
+.vigenere__key {
+  display: flex;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+.vigenere__key input {
+  margin-left: 0.5rem;
+}
+
+.vigenere__message {
+  padding: 1.5rem;
+  margin: 0 auto;
+  max-width: 800px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12), 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+  background-color: #000000;
+  word-wrap: break-word;
+}
+.vigenere__message p {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.vigenere__message-banner {
+  margin-top: 0;
+  text-align: center;
+}
+
+.typewriter h1 {
+  overflow: hidden; /* Ensures the content is not revealed until the animation */
+  border-right: .15em solid orange; /* The typwriter cursor */
+  white-space: nowrap; /* Keeps the content on a single line */
+  margin: 0 auto; /* Gives that scrolling effect as the typing happens */
+  letter-spacing: .15em; /* Adjust as needed */
+  animation: 
+    typing 5.5s steps(40, end),
+    blink-caret .75s step-end infinite;
+}
+
+/* The typing effect */
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+/* The typewriter cursor effect */
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: rgb(0, 0, 0); }
+}
+
+#button{
+  display: flex;
+  justify-content: center;
+  padding: 3px;
+  
+}
+a{
+  padding: 4px;
+  border: 1px solid #00ff22cc;
+}
+a:hover{
+  color: beige;
+  cursor: pointer;
+}
+    </style>
+  
