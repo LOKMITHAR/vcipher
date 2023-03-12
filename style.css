@@ -16,6 +16,10 @@ textarea {
   font-family: 'Space Mono', monospace;
 }
 
+body{
+   overflow: hidden;
+}
+
 .vigenere__wrapper {
   padding: 1rem;
   min-height: 100vh;
